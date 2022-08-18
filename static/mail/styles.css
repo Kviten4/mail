@@ -1,0 +1,63 @@
+textarea {
+    height: 100px;
+    resize: none;
+}
+
+.container {
+    max-width: 900px;
+}
+
+#mailGrid {
+    display: grid;
+    grid-template-columns: 100%;
+    gap: 1px;
+}
+
+.unreadMessage {
+    background: greenyellow;
+}
+
+.mailUnit, .mailUnit4 {
+    display: grid;
+    gap: 10px;
+    height: 45px;
+    outline: 1px solid black;
+}
+
+.mailUnit {
+    grid-template-columns: 40% 34% auto;
+}
+
+.mailUnit4 {
+    grid-template-columns: 30% 26% auto 150px;
+}
+
+.mailUnit:hover, .mailUnit4:hover {
+    background: green;
+    cursor: pointer;
+}
+
+
+.mailUnit > span, .mailUnit4 > span {
+    align-self: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.mailUnit > .stamp {
+    text-align: end;
+    padding-right: 10px;
+}
+
+.mailUnit4 > button {
+    align-self: center;
+    justify-self: end;
+    margin-right: 10px;
+}
+
+.arcButton {
+    height: 30px;
+    width: 70%;
+    min-width: 72px;
+}
