@@ -35,7 +35,7 @@ function compose_email() {
 
 // #############################################################################
 
-async function sendmail() {
+function sendmail() {
 
     const data = {
         recipients: document.querySelector('#compose-recipients').value,
@@ -43,10 +43,10 @@ async function sendmail() {
         body: document.querySelector('#compose-body').value,
         }
     
-    await fetch('/emails', {
+    fetch('/emails', {
         method: 'POST',
         body: JSON.stringify(data)
-    })
+    }) 
     .then(response => response.json())
     .then(result => {
         if (result.error) {
