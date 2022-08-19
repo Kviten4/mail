@@ -73,9 +73,7 @@ async function sendmail() {
 // ############################################################################
 
 async function load_mailbox(mailbox) {
-    console.log('start load_mailbox')
     const oldgrid = document.querySelector('#mailGrid');
-    // console.log(oldgrid)
         if (oldgrid)
         oldgrid.remove();
     const clear = document.querySelector('#mailGrid');
@@ -93,7 +91,6 @@ async function load_mailbox(mailbox) {
     await fetch('/emails/' + mailbox)
     .then(response => response.json())
     .then(emails => {
-        console.log('emails in fetch', emails)
         const maingrid = document.createElement('div');
         maingrid.setAttribute('id', 'mailGrid'); 
         emails.forEach(email => {
@@ -136,19 +133,16 @@ async function load_mailbox(mailbox) {
             }
 
             maingrid.append(grid_line);
-            // console.log('Нічого немає!!!', email.archived);
             grid_line.addEventListener('click', (event) => load_email(event, email.id, email.archived, archivebutton));    
 
         });
         document.querySelector('#emails-view').append(maingrid);
-        console.log('start append')
     });
 }
 
 // #############################################################################
 
 async function load_email(event, idOfEmail, arcStatus, arcbutton) {
-    console.log('start load_email')
     if (event.target === arcbutton)
         archive_email(idOfEmail, arcStatus);
     else {
@@ -200,8 +194,6 @@ async function load_email(event, idOfEmail, arcStatus, arcbutton) {
 // #############################################################################
 
 async function archive_email(idOfEmail, arcStatus) {
-    console.log('start arhive_email')
-    // console.log('arcStatus', arcStatus)
     let status = false;
     if (arcStatus == false)
         status = true;
