@@ -27,8 +27,10 @@ function compose_email() {
     document.querySelector('#compose-recipients').value = '';
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
-    let elem = '#errspan';
+    const elem = '#errspan';
     errorswitch = errAndMesCheck(elem, errorswitch);
+    const melem = '#messpan';
+    messageswitch = errAndMesCheck(melem, messageswitch);
 }
 
 // #############################################################################
@@ -53,16 +55,18 @@ function sendmail() {
                 oldspan.remove();
                 errorswitch = false;
             }
-            const errspan = document.createElement('span');
+            const errspan = document.createElement('p');
             errspan.innerHTML = `${result.error}`;
             errspan.setAttribute('id', 'errspan');
+            errspan.setAttribute('class', "alert alert-danger");
             document.querySelector('#error').append(errspan);
             compose_email();
         }
         else {
-            const messpan = document.createElement('span');
+            const messpan = document.createElement('p');
             messpan.innerHTML = `${result.message}`;
             messpan.setAttribute('id', 'messpan');
+            messpan.setAttribute('class', 'alert alert-success');
             document.querySelector('#message').append(messpan);
             load_mailbox('sent');
         }
@@ -81,15 +85,15 @@ function load_mailbox(mailbox) {
     const clear = document.querySelector('#mailGrid');
     console.log(2, clear);
     
+    // for display the message once
+    const elem = '#messpan';
+    messageswitch = errAndMesCheck(elem, messageswitch);
+
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
     document.querySelector('#compose-view').style.display = 'none';
     // Show the mailbox name
     document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
-    
-    // for display the message once
-    const elem = '#messpan';
-    messageswitch = errAndMesCheck(elem, messageswitch);
     
     fetch('/emails/' + mailbox)
     .then(response => response.json())
@@ -99,11 +103,16 @@ function load_mailbox(mailbox) {
         maingrid.setAttribute('id', 'mailGrid'); 
 
         emails.forEach(email => {
-            
             const grid_line = document.createElement('div');
             const recipientSender_field = document.createElement('span');
             const subject_field = document.createElement('span');
             const timestamp_field = document.createElement('span');
+            const archivebutton = document.createElement('button');
+
+            subject_field.innerHTML = `${email.subject}`;
+            timestamp_field.innerHTML = `${email.timestamp}`;
+
+            timestamp_field.setAttribute('class', 'stamp');
 
             if (mailbox == 'sent') {
                 grid_line.setAttribute('class', 'mailUnit');
@@ -116,42 +125,35 @@ function load_mailbox(mailbox) {
                     grid_line.setAttribute('class', 'mailUnit4 readMessage');
                 else
                     grid_line.setAttribute('class', 'mailUnit4 unreadMessage');
-            }
-            subject_field.innerHTML = `${email.subject}`;
-            timestamp_field.innerHTML = `${email.timestamp}`;
-
-            timestamp_field.setAttribute('class', 'stamp');
-
-            grid_line.append(recipientSender_field);
-            grid_line.append(subject_field);
-            grid_line.append(timestamp_field);
-            const archivebutton = document.createElement('button');
-            if (mailbox != 'sent') {
+                
                 if (mailbox == 'inbox')
                     archivebutton.innerText = 'Archive';
                 else
                     archivebutton.innerText = 'Unzip';
-                
-                archivebutton.className = 'arcButton btn-primary';
-                
-                grid_line.append(archivebutton);
+
+                archivebutton.className = 'arcButton btn-outline-primary';
             }
+
+            grid_line.append(recipientSender_field, subject_field, timestamp_field);
+            if (mailbox != 'sent')
+                grid_line.append(archivebutton);
 
             maingrid.append(grid_line);
 
-            grid_line.addEventListener('click', (event) => load_email(event, email.id, email.archived, archivebutton));    
+            grid_line.addEventListener('click', (event) => load_email(event, email.id, email.archived, archivebutton, mailbox));    
 
         });
         console.log(4, maingrid);
+       
         document.querySelector('#emails-view').append(maingrid);
     });
 }
 
 // #############################################################################
 
-function load_email(event, idOfEmail, arcStatus, arcbutton) {
+function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
     
-    if (event.target === arcbutton)
+    if (event.target === archivebutton)
         archive_email(idOfEmail, arcStatus);
     else {
         const oldmes = document.querySelector('#messpan');
@@ -173,7 +175,7 @@ function load_email(event, idOfEmail, arcStatus, arcbutton) {
             const subject_field = document.createElement('p');
             const timestamp_field = document.createElement('p');
             const body_field = document.createElement('p');
-
+            
             // for recipients' separating
             recipients = separatingRecipients(email.recipients)
             
@@ -181,17 +183,29 @@ function load_email(event, idOfEmail, arcStatus, arcbutton) {
             recipients_field.innerHTML = `<strong>To:</strong> ${recipients}`;
             subject_field.innerHTML = `<strong>Subject:</strong> ${email.subject}`;
             timestamp_field.innerHTML = `<strong>Date:</strong> ${email.timestamp}`;
-            body_field.innerHTML = `${email.body}`;
+
+            const array = email.body.split("\n");
+            let body = '';
+            for (let unit of array) {
+                body += unit + '<br>'
+            }
+            body_field.innerHTML = body;
 
             divForMail.setAttribute('id', 'divForMail');
 
-            divForMail.append(sender_field);
-            divForMail.append(recipients_field);
-            divForMail.append(subject_field);
-            divForMail.append(timestamp_field);
-            divForMail.append(body_field);
+            divForMail.append(sender_field, recipients_field, subject_field, timestamp_field, body_field);
+
+            if (mailbox != 'sent') {
+                const reply_button = document.createElement('button');
+                reply_button.innerText = 'Reply';
+                reply_button.className = 'btn btn-outline-primary';
+
+                divForMail.append(reply_button);
+                reply_button.addEventListener('click', () => reply_email(email));
+            }
 
             document.querySelector('#emails-view').append(divForMail);
+
             if (email.read == false) {
                 const data = {
                     read: true
@@ -227,22 +241,38 @@ function archive_email(idOfEmail, arcStatus) {
 }
 
 // #############################################################################
+
+function reply_email (email) {
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'block';
+
+    document.querySelector('#compose-recipients').value = email.sender;
+
+    if (email.subject.slice(0,4) == 'Re: ') 
+        document.querySelector('#compose-subject').value = email.subject;
+    else 
+        document.querySelector('#compose-subject').value = 'Re: ' + email.subject;
+    
+    document.querySelector('#compose-body').value = `\n--------------------------------\n On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
+}
+
+// #############################################################################
 // technical functions
 // -----------------------------------------------------------------------
 
 // for display the message or error once
-function errAndMesCheck (element, t) {
+function errAndMesCheck (element, myswitch) {
     const message = document.querySelector(element);
     if (message) {
-        if (t == false) {
-            t = true
+        if (myswitch == false) {
+            myswitch = true
         }
         else {
-            t = false;
+            myswitch = false;
             document.getElementById(element.slice(1)).remove();
         }
     }
-    return t;
+    return myswitch;
 }
 
 // #############################################################################
@@ -259,3 +289,4 @@ function separatingRecipients(list) {
 }
 
 // #############################################################################
+

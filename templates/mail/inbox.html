@@ -11,7 +11,7 @@
     <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
     <hr>
 
-    <div id="message">
+    <div id="message" class="">
     </div>
     
     <div id="emails-view">
@@ -32,7 +32,7 @@
                 <input class="form-control" id="compose-subject" placeholder="Subject">
             </div>
             <textarea class="form-control" id="compose-body" placeholder="Body"></textarea>
-            <input type="submit" class="btn btn-primary"/>
+            <input type="submit" class="btn btn-outline-primary"/>
         </form>
     </div>
 {% endblock %}
