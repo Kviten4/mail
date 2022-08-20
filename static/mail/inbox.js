@@ -7,9 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Use buttons to toggle between views
     document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
     document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
-    document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
+    document.querySelector('#archived').addEventListener('click', () => load_mailbox('archived'));
     document.querySelector('#compose').addEventListener('click', compose_email);
     document.querySelector('#compose-form').onsubmit = () => sendmail();
+
+    document.querySelectorAll('button').forEach(button => {
+        button.onclick = () => {
+            button.disabled = true;
+        }
+    });
 
     // By default, load the inbox
     load_mailbox('inbox');
@@ -27,10 +33,13 @@ function compose_email() {
     document.querySelector('#compose-recipients').value = '';
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
+
+    // Switch message status
     const elem = '#errspan';
     errorswitch = errAndMesCheck(elem, errorswitch);
     const melem = '#messpan';
     messageswitch = errAndMesCheck(melem, messageswitch);
+   
 }
 
 // #############################################################################
@@ -78,6 +87,8 @@ function sendmail() {
 
 async function load_mailbox(mailbox) {
     
+    const doubleTrick = '#' + mailbox;
+
     const oldgrid = document.querySelector('#mailGrid');
     if (oldgrid)
         oldgrid.remove();
@@ -143,6 +154,9 @@ async function load_mailbox(mailbox) {
         
         document.querySelector('#emails-view').append(maingrid);
         
+        const overbutton = document.querySelector(doubleTrick);
+        overbutton.disabled = false;
+ 
     });
 }
 

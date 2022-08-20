@@ -15,6 +15,10 @@ textarea {
     margin-bottom: 0.5rem;
 }
 
+#compose {
+    width: 78px;
+}
+
 .container {
     max-width: 900px;
 }
