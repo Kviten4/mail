@@ -140,11 +140,11 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "mail/login.html", {
+            return render(request, "mail/login new.html", {
                 "message": "Invalid email and/or password."
             })
     else:
-        return render(request, "mail/login.html")
+        return render(request, "mail/login new.html")
 
 
 def logout_view(request):
@@ -155,12 +155,16 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         email = request.POST["email"]
+        if not email:
+            return render(request, "mail/register new.html", {
+                "message": "Email adress must be filled."
+            })
 
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "mail/register.html", {
+            return render(request, "mail/register new.html", {
                 "message": "Passwords must match."
             })
 
@@ -170,10 +174,10 @@ def register(request):
             user.save()
         except IntegrityError as e:
             print(e)
-            return render(request, "mail/register.html", {
+            return render(request, "mail/register new.html", {
                 "message": "Email address already taken."
             })
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "mail/register.html")
+        return render(request, "mail/register new.html")

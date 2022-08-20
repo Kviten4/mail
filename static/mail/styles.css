@@ -1,6 +1,6 @@
 body {
-    background-color: #b9c3d6;
-    background-image: url("https://www.transparenttextures.com/patterns/fresh-snow.png");
+    background-color: #b9c3d6 !important; 
+    background-image: url("https://www.transparenttextures.com/patterns/fresh-snow.png") !important;
 }
 
 hr {

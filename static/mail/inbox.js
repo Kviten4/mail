@@ -77,7 +77,7 @@ function sendmail() {
 // ############################################################################
 
 async function load_mailbox(mailbox) {
-
+    
     const oldgrid = document.querySelector('#mailGrid');
     if (oldgrid)
         oldgrid.remove();
@@ -142,6 +142,7 @@ async function load_mailbox(mailbox) {
         });
         
         document.querySelector('#emails-view').append(maingrid);
+        
     });
 }
 
