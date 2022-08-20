@@ -33,7 +33,7 @@ function compose_email() {
 
 // #############################################################################
 
-function sendmail() {
+async function sendmail() {
 
     const data = {
         recipients: document.querySelector('#compose-recipients').value,
@@ -41,7 +41,7 @@ function sendmail() {
         body: document.querySelector('#compose-body').value,
         }
     
-    fetch('/emails', {
+    await fetch('/emails', {
         method: 'POST',
         body: JSON.stringify(data)
     })
@@ -72,15 +72,12 @@ function sendmail() {
 
 // ############################################################################
 
-function load_mailbox(mailbox) {
-
+async function load_mailbox(mailbox) {
     const oldgrid = document.querySelector('#mailGrid');
-    console.log(1, oldgrid);
-    if (oldgrid)
+        if (oldgrid)
         oldgrid.remove();
     const clear = document.querySelector('#mailGrid');
-    console.log(2, clear);
-    
+      
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
     document.querySelector('#compose-view').style.display = 'none';
@@ -91,13 +88,11 @@ function load_mailbox(mailbox) {
     const elem = '#messpan';
     messageswitch = errAndMesCheck(elem, messageswitch);
     
-    fetch('/emails/' + mailbox)
+    await fetch('/emails/' + mailbox)
     .then(response => response.json())
     .then(emails => {
-        console.log(3, emails);
         const maingrid = document.createElement('div');
         maingrid.setAttribute('id', 'mailGrid'); 
-
         emails.forEach(email => {
             
             const grid_line = document.createElement('div');
@@ -138,19 +133,16 @@ function load_mailbox(mailbox) {
             }
 
             maingrid.append(grid_line);
-
             grid_line.addEventListener('click', (event) => load_email(event, email.id, email.archived, archivebutton));    
 
         });
-        console.log(4, maingrid);
         document.querySelector('#emails-view').append(maingrid);
     });
 }
 
 // #############################################################################
 
-function load_email(event, idOfEmail, arcStatus, arcbutton) {
-    
+async function load_email(event, idOfEmail, arcStatus, arcbutton) {
     if (event.target === arcbutton)
         archive_email(idOfEmail, arcStatus);
     else {
@@ -164,7 +156,7 @@ function load_email(event, idOfEmail, arcStatus, arcbutton) {
         if (deleteMainGrid)
             deleteMainGrid.remove();
         
-        fetch('/emails/' + idOfEmail)
+        await fetch('/emails/' + idOfEmail)
         .then(response => response.json())
         .then(email => {
             const divForMail = document.createElement('div');
@@ -191,24 +183,17 @@ function load_email(event, idOfEmail, arcStatus, arcbutton) {
             divForMail.append(timestamp_field);
             divForMail.append(body_field);
 
+
             document.querySelector('#emails-view').append(divForMail);
-            if (email.read == false) {
-                const data = {
-                    read: true
-                };
-                fetch('/emails/'+ idOfEmail, {
-                    method: 'PUT',
-                    body: JSON.stringify(data)
-                    });
-            }
+
+            read(idOfEmail, email)
         })
     }
 }
 
 // #############################################################################
 
-function archive_email(idOfEmail, arcStatus) {
-    
+async function archive_email(idOfEmail, arcStatus) {
     let status = false;
     if (arcStatus == false)
         status = true;
@@ -217,12 +202,12 @@ function archive_email(idOfEmail, arcStatus) {
         archived: (status)
     };
 
-    fetch('/emails/'+ idOfEmail, {
+    await fetch('/emails/'+ idOfEmail, {
         method: 'PUT',
         body: JSON.stringify(data)
         });
     
-    console.log(55, idOfEmail);
+    
     load_mailbox('inbox');
 }
 
@@ -259,3 +244,15 @@ function separatingRecipients(list) {
 }
 
 // #############################################################################
+
+async function read(idOfEmail, email){
+    if (email.read == false) {
+        const data = {
+            read: true
+        };
+        await fetch('/emails/'+ idOfEmail, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+            });
+    }
+}
