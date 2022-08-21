@@ -35,13 +35,10 @@ function compose_email() {
     document.querySelector('#compose-body').value = '';
 
     // Switch message status
-    const elem = '#errspan';
-    errorswitch = errAndMesCheck(elem, errorswitch);
-    const melem = '#messpan';
-    messageswitch = errAndMesCheck(melem, messageswitch);
+    checkError();
+    checkMessage();      
 
-    document.querySelector('.submitdisable').disabled = false;
-    
+    document.querySelector('.submitdisable').disabled = false;    
 }
 
 // #############################################################################
@@ -49,6 +46,8 @@ function compose_email() {
 function sendmail() {
     
     document.querySelector('.submitdisable').disabled = true;
+
+    checkError();
 
     const data = {
         recipients: document.querySelector('#compose-recipients').value,
@@ -63,11 +62,6 @@ function sendmail() {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            const oldspan = document.querySelector('#errspan');
-            if (oldspan) {
-                oldspan.remove();
-                errorswitch = false;
-            }
             const errspan = document.createElement('p');
             errspan.innerHTML = `${result.error}`;
             errspan.setAttribute('id', 'errspan');
@@ -93,13 +87,9 @@ function load_mailbox(mailbox) {
     
     const doubleTrick = '#' + mailbox;
 
-    const oldgrid = document.querySelector('#mailGrid');
-    if (oldgrid)
-        oldgrid.remove();
+    removeOld('#mailGrid');
     
-    // for display the message once
-    const elem = '#messpan';
-    messageswitch = errAndMesCheck(elem, messageswitch);
+    checkMessage();
 
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
@@ -176,21 +166,14 @@ function load_mailbox(mailbox) {
 
 function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
     
-    if (event.target === archivebutton) {
-        
-        archive_email(idOfEmail, arcStatus);
+    if (event.target === archivebutton) {       
+        archive_email(idOfEmail, arcStatus, mailbox);
     }
-
     else {
-        const oldmes = document.querySelector('#messpan');
-        if (oldmes)
-            oldmes.remove();
-        const deleteH3 = document.querySelector('h3');
-        if (deleteH3)
-            deleteH3.remove();
-        const deleteMainGrid = document.querySelector('#mailGrid');
-        if (deleteMainGrid)
-            deleteMainGrid.remove();
+        checkMessage();
+
+        removeOld('h3');
+        removeOld('#mailGrid');
         
         fetch('/emails/' + idOfEmail)
         .then(response => response.json())
@@ -233,14 +216,13 @@ function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
             document.querySelector('#emails-view').append(divForMail);
 
             readStatus(email.read, idOfEmail);
-
         })
     }
 }
 
 // #############################################################################
 
-function archive_email(idOfEmail, arcStatus) {
+function archive_email(idOfEmail, arcStatus, mailbox) {
     
     let status = false;
     if (arcStatus == false)
@@ -254,9 +236,36 @@ function archive_email(idOfEmail, arcStatus) {
         method: 'PUT',
         body: JSON.stringify(data)
         })
-    .then(() => {load_mailbox('inbox')
+    .then(() => {
+        if (mailbox == 'inbox')
+            load_mailbox('inbox')
+        else
+            load_mailbox('archived')
     });
     
+}
+
+// #############################################################################
+
+function reply_email (email) {
+    document.querySelector('.replydisable').disabled = true;
+    document.querySelector('.submitdisable').disabled = false;
+
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'block';
+
+    document.querySelector('#compose-recipients').value = email.sender;
+
+    checkError();
+    checkMessage();
+
+    if (email.subject.slice(0,4) == 'Re: ') 
+        document.querySelector('#compose-subject').value = email.subject;
+    else 
+        document.querySelector('#compose-subject').value = 'Re: ' + email.subject;
+    
+    document.querySelector('#compose-body').value = `\n--------------------------------\n 
+    On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
 }
 
 // #############################################################################
@@ -274,45 +283,8 @@ function readStatus(status, idOfEmail) {
 }
 
 // #############################################################################
-
-function reply_email (email) {
-    document.querySelector('.replydisable').disabled = true;
-
-    document.querySelector('#emails-view').style.display = 'none';
-    document.querySelector('#compose-view').style.display = 'block';
-
-    document.querySelector('#compose-recipients').value = email.sender;
-
-    if (email.subject.slice(0,4) == 'Re: ') 
-        document.querySelector('#compose-subject').value = email.subject;
-    else 
-        document.querySelector('#compose-subject').value = 'Re: ' + email.subject;
-    
-    document.querySelector('#compose-body').value = `\n--------------------------------\n 
-    On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
-
-}
-
-// #############################################################################
 // technical functions
 // -----------------------------------------------------------------------
-
-// for display the message or error once
-function errAndMesCheck (element, myswitch) {
-    const message = document.querySelector(element);
-    if (message) {
-        if (myswitch == false) {
-            myswitch = true
-        }
-        else {
-            myswitch = false;
-            document.getElementById(element.slice(1)).remove();
-        }
-    }
-    return myswitch;
-}
-
-// #############################################################################
 
 // for recipients' separating
 function separatingRecipients(list) {
@@ -326,4 +298,43 @@ function separatingRecipients(list) {
 }
 
 // #############################################################################
+
+// remove old element
+function removeOld(element){
+    const old = document.querySelector(element);
+    if (old)
+        old.remove();
+}
+
+// #############################################################################
+
+// for display the message or error once
+function checkError() {
+    const elem = document.querySelector('#errspan');
+    if (elem) {
+        if (errorswitch == false) {
+            errorswitch = true;
+        }
+        else {
+            errorswitch = false;
+            elem.remove();
+        } 
+    }
+}
+
+function checkMessage() {
+    const melem = document.querySelector('#messpan');
+    if (melem) {
+        if (messageswitch == false) {
+            messageswitch = true;
+        }
+        else {
+            messageswitch = false;
+            melem.remove();
+        }
+    } 
+}
+
+// #############################################################################
+
 

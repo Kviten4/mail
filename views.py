@@ -27,14 +27,14 @@ def compose(request):
 
     # Composing a new email must be via POST
     if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
+        return JsonResponse({"error": "POST request required"}, status=400)
 
     # Check recipient emails
     data = json.loads(request.body)
     emails = [email.strip() for email in data.get("recipients").split(",")]
     if emails == [""]:
         return JsonResponse({
-            "error": "At least one recipient required."
+            "error": "At least one recipient required"
         }, status=400)
 
     # Convert email addresses to users
@@ -45,7 +45,7 @@ def compose(request):
             recipients.append(user)
         except User.DoesNotExist:
             return JsonResponse({
-                "error": f"User with email {email} does not exist."
+                "error": f"User with email {email} does not exist"
             }, status=400)
 
     # Get contents of email
@@ -69,7 +69,7 @@ def compose(request):
             email.recipients.add(recipient)
         email.save()
 
-    return JsonResponse({"message": "Email sent successfully."}, status=201)
+    return JsonResponse({"message": "Email sent successfully"}, status=201)
 
 
 @login_required
@@ -89,7 +89,7 @@ def mailbox(request, mailbox):
             user=request.user, recipients=request.user, archived=True
         )
     else:
-        return JsonResponse({"error": "Invalid mailbox."}, status=400)
+        return JsonResponse({"error": "Invalid mailbox"}, status=400)
 
     # Return emails in reverse chronologial order
     emails = emails.order_by("-timestamp").all()
@@ -104,7 +104,7 @@ def email(request, email_id):
     try:
         email = Email.objects.get(user=request.user, pk=email_id)
     except Email.DoesNotExist:
-        return JsonResponse({"error": "Email not found."}, status=404)
+        return JsonResponse({"error": "Email not found"}, status=404)
 
     # Return email contents
     if request.method == "GET":
@@ -123,7 +123,7 @@ def email(request, email_id):
     # Email must be via GET or PUT
     else:
         return JsonResponse({
-            "error": "GET or PUT request required."
+            "error": "GET or PUT request required"
         }, status=400)
 
 
@@ -141,7 +141,7 @@ def login_view(request):
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "mail/login new.html", {
-                "message": "Invalid email and/or password."
+                "message": "Invalid email and/or password"
             })
     else:
         return render(request, "mail/login new.html")
@@ -157,7 +157,7 @@ def register(request):
         email = request.POST["email"]
         if not email:
             return render(request, "mail/register new.html", {
-                "message": "Email adress must be filled."
+                "message": "Email adress must be filled"
             })
 
         # Ensure password matches confirmation
@@ -165,7 +165,7 @@ def register(request):
         confirmation = request.POST["confirmation"]
         if password != confirmation:
             return render(request, "mail/register new.html", {
-                "message": "Passwords must match."
+                "message": "Passwords must match"
             })
 
         # Attempt to create new user
@@ -175,7 +175,7 @@ def register(request):
         except IntegrityError as e:
             print(e)
             return render(request, "mail/register new.html", {
-                "message": "Email address already taken."
+                "message": "Email address already taken"
             })
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
