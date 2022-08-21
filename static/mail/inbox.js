@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#compose').addEventListener('click', compose_email);
     document.querySelector('#compose-form').onsubmit = () => sendmail();
 
-    document.querySelectorAll('button').forEach(button => {
+    document.querySelectorAll('.disable').forEach(button => {
         button.onclick = () => {
             button.disabled = true;
         }
@@ -39,12 +39,16 @@ function compose_email() {
     errorswitch = errAndMesCheck(elem, errorswitch);
     const melem = '#messpan';
     messageswitch = errAndMesCheck(melem, messageswitch);
-   
+
+    document.querySelector('.submitdisable').disabled = false;
+    
 }
 
 // #############################################################################
 
 function sendmail() {
+    
+    document.querySelector('.submitdisable').disabled = true;
 
     const data = {
         recipients: document.querySelector('#compose-recipients').value,
@@ -85,7 +89,7 @@ function sendmail() {
 
 // ############################################################################
 
-async function load_mailbox(mailbox) {
+function load_mailbox(mailbox) {
     
     const doubleTrick = '#' + mailbox;
 
@@ -103,7 +107,7 @@ async function load_mailbox(mailbox) {
     // Show the mailbox name
     document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
     
-    await fetch('/emails/' + mailbox)
+    fetch('/emails/' + mailbox)
     .then(response => response.json())
     .then(emails => {
 
@@ -147,8 +151,10 @@ async function load_mailbox(mailbox) {
                 grid_line.append(archivebutton);
 
             maingrid.append(grid_line);
-
-            grid_line.addEventListener('click', (event) => load_email(event, email.id, email.archived, archivebutton, mailbox));    
+            
+            grid_line.addEventListener('click', (event) => 
+                load_email(event, email.id, email.archived, archivebutton, mailbox)
+            );
 
         });
         
@@ -156,16 +162,25 @@ async function load_mailbox(mailbox) {
         
         const overbutton = document.querySelector(doubleTrick);
         overbutton.disabled = false;
- 
+
+        document.querySelectorAll('.arcButton').forEach(button => {
+            button.onclick = () => {
+                button.disabled = true;
+            }
+        });
+
     });
 }
 
 // #############################################################################
 
-async function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
+function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
     
-    if (event.target === archivebutton)
+    if (event.target === archivebutton) {
+        
         archive_email(idOfEmail, arcStatus);
+    }
+
     else {
         const oldmes = document.querySelector('#messpan');
         if (oldmes)
@@ -177,7 +192,7 @@ async function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
         if (deleteMainGrid)
             deleteMainGrid.remove();
         
-        await fetch('/emails/' + idOfEmail)
+        fetch('/emails/' + idOfEmail)
         .then(response => response.json())
         .then(email => {
             const divForMail = document.createElement('div');
@@ -209,7 +224,7 @@ async function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
             if (mailbox != 'sent') {
                 const reply_button = document.createElement('button');
                 reply_button.innerText = 'Reply';
-                reply_button.className = 'btn btn-outline-primary';
+                reply_button.className = 'btn btn-outline-primary replydisable';
 
                 divForMail.append(reply_button);
                 reply_button.addEventListener('click', () => reply_email(email));
@@ -225,7 +240,7 @@ async function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
 
 // #############################################################################
 
-async function archive_email(idOfEmail, arcStatus) {
+function archive_email(idOfEmail, arcStatus) {
     
     let status = false;
     if (arcStatus == false)
@@ -235,22 +250,23 @@ async function archive_email(idOfEmail, arcStatus) {
         archived: (status)
     };
 
-    await fetch('/emails/'+ idOfEmail, {
+    fetch('/emails/'+ idOfEmail, {
         method: 'PUT',
         body: JSON.stringify(data)
-        });
+        })
+    .then(() => {load_mailbox('inbox')
+    });
     
-    load_mailbox('inbox');
 }
 
 // #############################################################################
 
-async function readStatus(status, idOfEmail) {
+function readStatus(status, idOfEmail) {
     if (status == false) {
         const data = {
             read: true
         };
-        await fetch('/emails/'+ idOfEmail, {
+        fetch('/emails/'+ idOfEmail, {
             method: 'PUT',
             body: JSON.stringify(data)
             });
@@ -260,6 +276,8 @@ async function readStatus(status, idOfEmail) {
 // #############################################################################
 
 function reply_email (email) {
+    document.querySelector('.replydisable').disabled = true;
+
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
 
@@ -270,7 +288,9 @@ function reply_email (email) {
     else 
         document.querySelector('#compose-subject').value = 'Re: ' + email.subject;
     
-    document.querySelector('#compose-body').value = `\n--------------------------------\n On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
+    document.querySelector('#compose-body').value = `\n--------------------------------\n 
+    On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
+
 }
 
 // #############################################################################
