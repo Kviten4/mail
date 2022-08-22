@@ -2,15 +2,16 @@
 {% load static %}
 
 {% block body %}
-    <h2>{{ request.user.email }}</h2>
+    
     <div class="navbut">
         <div>
-            <button class="btn btn-sm btn-outline-primary disable" id="inbox">Inbox</button>
-            <button class="btn btn-sm btn-outline-primary" id="compose">Compose</button>
-            <button class="btn btn-sm btn-outline-primary disable" id="sent">Sent</button>
-            <button class="btn btn-sm btn-outline-primary disable" id="archived">Archived</button>
+            <button class="btn btn-sm btn-outline-primary disable highlight" id="inbox">Inbox</button>
+            <button class="btn btn-sm btn-outline-primary highlight" id="compose">Compose</button>
+            <button class="btn btn-sm btn-outline-primary disable highlight" id="sent">Sent</button>
+            <button class="btn btn-sm btn-outline-primary disable highlight" id="archived">Archived</button>
         </div>
         <div>
+            <span class="user"> {{ request.user.email }}</span>
             <a class="btn btn-sm btn-outline-primary afloat" href="{% url 'logout' %}">Log Out</a>
         </div>       
     </div>
@@ -23,7 +24,7 @@
     </div>
 
     <div id="compose-view">
-        <h3>New Email</h3>
+        <!-- <h3>New Email</h3> -->
         <div id="error">
         </div>
         <form id="compose-form" action="">

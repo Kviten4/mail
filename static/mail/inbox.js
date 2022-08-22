@@ -34,6 +34,16 @@ function compose_email() {
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
 
+    document.querySelectorAll('.highlight').forEach(button => {
+        button.removeAttribute('style');
+    });
+
+    const overbutton = document.querySelector('#compose');
+    overbutton.style.color = '#fff';
+    overbutton.style.backgroundColor = '#007bff';
+    overbutton.style.borderColor = '#007bff';
+    overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
+
     // Switch message status
     checkError();
     checkMessage();      
@@ -84,10 +94,15 @@ function sendmail() {
 // ############################################################################
 
 function load_mailbox(mailbox) {
+
+    document.querySelectorAll('.highlight').forEach(button => {
+        button.removeAttribute('style');
+    });
     
     const doubleTrick = '#' + mailbox;
 
     removeOld('#mailGrid');
+    removeOld('#divForMail');
     
     checkMessage();
 
@@ -95,7 +110,7 @@ function load_mailbox(mailbox) {
     document.querySelector('#emails-view').style.display = 'block';
     document.querySelector('#compose-view').style.display = 'none';
     // Show the mailbox name
-    document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+    // document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
     
     fetch('/emails/' + mailbox)
     .then(response => response.json())
@@ -152,6 +167,10 @@ function load_mailbox(mailbox) {
         
         const overbutton = document.querySelector(doubleTrick);
         overbutton.disabled = false;
+        overbutton.style.color = '#fff';
+        overbutton.style.backgroundColor = '#007bff';
+        overbutton.style.borderColor = '#007bff';
+        overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
 
         document.querySelectorAll('.arcButton').forEach(button => {
             button.onclick = () => {
@@ -174,6 +193,7 @@ function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
 
         removeOld('h3');
         removeOld('#mailGrid');
+        removeOld('#divForMail');
         
         fetch('/emails/' + idOfEmail)
         .then(response => response.json())

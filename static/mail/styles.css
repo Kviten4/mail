@@ -4,8 +4,8 @@ body {
 }
 
 hr {
-    margin-top: 5px;
-    margin-bottom: 7px;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 textarea {
@@ -15,10 +15,17 @@ textarea {
     margin-bottom: 0.5rem;
 }
 
-.navbut{
+.navbut {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-top: 25px;
+}
+
+.user {
+    font-weight: bold;
+    font-size: 17px;
+    margin-right: 10px;
 }
 
 #compose {
