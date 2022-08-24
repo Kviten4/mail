@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.disable').forEach(button => {
         button.onclick = () => {
-            button.disabled = true;
+            document.querySelectorAll('button').forEach(button => {
+                button.disabled = true;
+            });
         }
     });
 
@@ -38,11 +40,7 @@ function compose_email() {
         button.removeAttribute('style');
     });
 
-    const overbutton = document.querySelector('#compose');
-    overbutton.style.color = '#fff';
-    overbutton.style.backgroundColor = '#007bff';
-    overbutton.style.borderColor = '#007bff';
-    overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
+    highlighting('#compose');
 
     // Switch message status
     checkError();
@@ -157,28 +155,44 @@ function load_mailbox(mailbox) {
 
             maingrid.append(grid_line);
             
-            grid_line.addEventListener('click', (event) => 
-                load_email(event, email.id, email.archived, archivebutton, mailbox)
-            );
-
+            grid_line.addEventListener('click', function loadf(event) {
+                grid_line.removeEventListener('click', loadf);
+                load_email(event, email.id, email.archived, archivebutton, mailbox);
+                });
         });
         
         document.querySelector('#emails-view').append(maingrid);
         
-        const overbutton = document.querySelector(doubleTrick);
-        overbutton.disabled = false;
-        overbutton.style.color = '#fff';
-        overbutton.style.backgroundColor = '#007bff';
-        overbutton.style.borderColor = '#007bff';
-        overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
+        document.querySelectorAll('button').forEach(button => {
+            button.disabled = false; 
+        });
+    
+        highlighting(doubleTrick);
 
+        // document.querySelectorAll('.mailUnit4').forEach(elem => {    
+        //     elem.onclick = function loadf(event) {
+        //         load_email(event, emails.email.id, emails.email.archived, archivebutton, mailbox);
+        //         elem.removeEventListener('click', loadf);
+        //     }
+        // });
+        
+        // document.querySelectorAll('.mailUnit4').forEach(elem => {    
+        //     elem.removeEventListener('click', loadf) 
+        // });
+    
         document.querySelectorAll('.arcButton').forEach(button => {
             button.onclick = () => {
-                button.disabled = true;
+                // document.querySelectorAll('.mailUnit4').forEach(button => {
+                //     button.removeEventListener('click', loadf()) });
+                document.querySelectorAll('.arcButton').forEach(button => {
+                    button.disabled = true; });   
+                document.querySelectorAll('button').forEach(button => {
+                    button.disabled = true;
+                });
             }
-        });
-
-    });
+        });   
+          
+    })
 }
 
 // #############################################################################
@@ -189,9 +203,13 @@ function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
         archive_email(idOfEmail, arcStatus, mailbox);
     }
     else {
+
+        document.querySelectorAll('.highlight').forEach(button => {
+            button.removeAttribute('style');
+        });
+
         checkMessage();
 
-        removeOld('h3');
         removeOld('#mailGrid');
         removeOld('#divForMail');
         
@@ -271,6 +289,8 @@ function reply_email (email) {
     document.querySelector('.replydisable').disabled = true;
     document.querySelector('.submitdisable').disabled = false;
 
+    highlighting('#compose');
+
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
 
@@ -284,7 +304,7 @@ function reply_email (email) {
     else 
         document.querySelector('#compose-subject').value = 'Re: ' + email.subject;
     
-    document.querySelector('#compose-body').value = `\n--------------------------------\n 
+    document.querySelector('#compose-body').value = `\n--------------------------------
     On ${email.timestamp} ${email.sender} wrote: \n${email.body}`;
 }
 
@@ -357,4 +377,13 @@ function checkMessage() {
 
 // #############################################################################
 
+// for tabs highlighting
+function highlighting(element) {
+    const overbutton = document.querySelector(element);
+    overbutton.style.color = '#fff';
+    overbutton.style.backgroundColor = '#007bff';
+    overbutton.style.borderColor = '#007bff';
+    overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
+}
 
+// #############################################################################
