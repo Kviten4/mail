@@ -98,3 +98,35 @@ textarea {
 .alert {
     text-align: center;
 }
+
+@media (max-width: 688px) {
+    #mailGrid{
+        gap: 5px;
+    }
+    .mailUnit, .mailUnit4 {
+        grid-template-columns: 100%;
+        height: fit-content;
+        gap: 10px;
+    }
+    .mailUnit > .stamp {
+        text-align: start;
+        /* padding-right: 10px; */
+    }
+    .mailUnit4 > button {
+        align-self: center;
+        justify-self: start;
+        width: 100px;
+    }
+}
+
+@media (max-width: 538px) {
+    .navbut {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 5px;
+    }
+    
+    .userpanel {
+        align-self: flex-end;
+    }
+}

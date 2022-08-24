@@ -10,7 +10,7 @@
             <button class="btn btn-sm btn-outline-primary disable highlight" id="sent">Sent</button>
             <button class="btn btn-sm btn-outline-primary disable highlight" id="archived">Archived</button>
         </div>
-        <div>
+        <div class="userpanel">
             <span class="user"> {{ request.user.email }}</span>
             <a class="btn btn-sm btn-outline-primary afloat" href="{% url 'logout' %}">Log Out</a>
         </div>       

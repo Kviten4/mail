@@ -101,7 +101,13 @@ function load_mailbox(mailbox) {
 
     removeOld('#mailGrid');
     removeOld('#divForMail');
+
+
+    // function loadf(emailid, emailarchived, archivebutton, mailbox, event) {
+    //     load_email(event, emailid, emailarchived, archivebutton, mailbox);
+    //     };
     
+
     checkMessage();
 
     // Show the mailbox and hide other views
@@ -159,6 +165,8 @@ function load_mailbox(mailbox) {
                 grid_line.removeEventListener('click', loadf);
                 load_email(event, email.id, email.archived, archivebutton, mailbox);
                 });
+
+            // grid_line.addEventListener('click', loadf(email.id, email.archived, archivebutton, mailbox, e));
         });
         
         document.querySelector('#emails-view').append(maingrid);
@@ -191,7 +199,6 @@ function load_mailbox(mailbox) {
                 });
             }
         });   
-          
     })
 }
 
