@@ -30,6 +30,7 @@ function compose_email() {
     // Show compose view and hide other views
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
+    document.querySelector('#oneEmailView').style.display = 'none';
 
     // Clear out composition fields
     document.querySelector('#compose-recipients').value = '';
@@ -102,17 +103,12 @@ function load_mailbox(mailbox) {
     removeOld('#mailGrid');
     removeOld('#divForMail');
 
-
-    // function loadf(emailid, emailarchived, archivebutton, mailbox, event) {
-    //     load_email(event, emailid, emailarchived, archivebutton, mailbox);
-    //     };
-    
-
     checkMessage();
 
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
     document.querySelector('#compose-view').style.display = 'none';
+    document.querySelector('#oneEmailView').style.display = 'none';
     // Show the mailbox name
     // document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
     
@@ -166,7 +162,6 @@ function load_mailbox(mailbox) {
                 load_email(event, email.id, email.archived, archivebutton, mailbox);
                 });
 
-            // grid_line.addEventListener('click', loadf(email.id, email.archived, archivebutton, mailbox, e));
         });
         
         document.querySelector('#emails-view').append(maingrid);
@@ -176,24 +171,12 @@ function load_mailbox(mailbox) {
         });
     
         highlighting(doubleTrick);
-
-        // document.querySelectorAll('.mailUnit4').forEach(elem => {    
-        //     elem.onclick = function loadf(event) {
-        //         load_email(event, emails.email.id, emails.email.archived, archivebutton, mailbox);
-        //         elem.removeEventListener('click', loadf);
-        //     }
-        // });
-        
-        // document.querySelectorAll('.mailUnit4').forEach(elem => {    
-        //     elem.removeEventListener('click', loadf) 
-        // });
     
         document.querySelectorAll('.arcButton').forEach(button => {
             button.onclick = () => {
-                // document.querySelectorAll('.mailUnit4').forEach(button => {
-                //     button.removeEventListener('click', loadf()) });
                 document.querySelectorAll('.arcButton').forEach(button => {
-                    button.disabled = true; });   
+                    button.disabled = true; 
+                });   
                 document.querySelectorAll('button').forEach(button => {
                     button.disabled = true;
                 });
@@ -214,6 +197,8 @@ function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
         document.querySelectorAll('.highlight').forEach(button => {
             button.removeAttribute('style');
         });
+
+        document.querySelector('#oneEmailView').style.display = 'block';
 
         checkMessage();
 
@@ -258,7 +243,7 @@ function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
                 reply_button.addEventListener('click', () => reply_email(email));
             }
 
-            document.querySelector('#emails-view').append(divForMail);
+            document.querySelector('#oneEmailView').append(divForMail);
 
             readStatus(email.read, idOfEmail);
         })
@@ -300,6 +285,7 @@ function reply_email (email) {
 
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
+    document.querySelector('#oneEmailView').style.display = 'none';
 
     document.querySelector('#compose-recipients').value = email.sender;
 
