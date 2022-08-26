@@ -2,6 +2,9 @@
 let messageswitch = false;
 let errorswitch = false;
 
+// for offline 
+let mainfield = '';
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // Use buttons to toggle between views
@@ -19,6 +22,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // if connection lost
+    window.onoffline = () => {
+    
+        const val = document.querySelector('.forhighlighting');
+        if (val)
+            mainfield = val.innerHTML.toLowerCase();
+
+        const mesabcon = document.createElement('p');
+        mesabcon.innerHTML = 'Connection lost';
+        mesabcon.setAttribute('id', 'mesabcon');
+        mesabcon.setAttribute('class', "alert alert-danger");
+        document.querySelector('#message').prepend(mesabcon);
+
+        document.querySelector('.submitdisable').disabled = true;
+
+        document.querySelectorAll('button').forEach(button => {
+            button.disabled = true;
+            });
+
+        document.querySelectorAll('.linkdiv').forEach(button => {
+            button.remove();
+            })
+
+        document.querySelector('.afloat').classList.add('disabled');
+    };
+          
+    // if connection recovered
+    window.ononline = () => {
+
+        document.querySelector('#mesabcon').remove();
+        document.querySelector('.afloat').classList.remove('disabled');
+
+        document.querySelectorAll('button').forEach(button => {
+            button.disabled = false;
+            })
+        document.querySelector('.submitdisable').disabled = false;
+        
+        if (mainfield) {
+            if (mainfield != 'compose') {
+                load_mailbox(mainfield);
+            }
+            mainfield = '';
+        }
+    };
+
     // By default, load the inbox
     load_mailbox('inbox');
 });
@@ -30,16 +78,13 @@ function compose_email() {
     // Show compose view and hide other views
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
-    document.querySelector('#oneEmailView').style.display = 'none';
 
     // Clear out composition fields
     document.querySelector('#compose-recipients').value = '';
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
 
-    document.querySelectorAll('.highlight').forEach(button => {
-        button.removeAttribute('style');
-    });
+    clearHighlighting();
 
     highlighting('#compose');
 
@@ -94,9 +139,7 @@ function sendmail() {
 
 function load_mailbox(mailbox) {
 
-    document.querySelectorAll('.highlight').forEach(button => {
-        button.removeAttribute('style');
-    });
+    clearHighlighting();
     
     const doubleTrick = '#' + mailbox;
 
@@ -108,10 +151,7 @@ function load_mailbox(mailbox) {
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
     document.querySelector('#compose-view').style.display = 'none';
-    document.querySelector('#oneEmailView').style.display = 'none';
-    // Show the mailbox name
-    // document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
-    
+
     fetch('/emails/' + mailbox)
     .then(response => response.json())
     .then(emails => {
@@ -151,26 +191,40 @@ function load_mailbox(mailbox) {
                 archivebutton.className = 'arcButton btn-outline-primary';
             }
 
-            grid_line.append(recipientSender_field, subject_field, timestamp_field);
+            const linkdiv = document.createElement('div');
+            linkdiv.setAttribute('class', 'linkdiv');
+
+            grid_line.append(recipientSender_field, subject_field, timestamp_field, linkdiv);
             if (mailbox != 'sent')
                 grid_line.append(archivebutton);
 
             maingrid.append(grid_line);
             
-            grid_line.addEventListener('click', function loadf(event) {
-                grid_line.removeEventListener('click', loadf);
-                load_email(event, email.id, email.archived, archivebutton, mailbox);
+            linkdiv.addEventListener('click', () => {
+                load_email(email.id, mailbox);
                 });
-
+            
+            archivebutton.addEventListener('click', () => {
+                archive_email(email.id, email.archived, mailbox);
+                });
         });
         
         document.querySelector('#emails-view').append(maingrid);
-        
+
         document.querySelectorAll('button').forEach(button => {
             button.disabled = false; 
         });
     
         highlighting(doubleTrick);
+    
+        document.querySelectorAll('.linkdiv').forEach(div => {
+            div.addEventListener('click', () => {
+                div.remove();
+                document.querySelectorAll('button').forEach(button => {
+                    button.disabled = true;
+                });
+            })
+        });
     
         document.querySelectorAll('.arcButton').forEach(button => {
             button.onclick = () => {
@@ -180,74 +234,71 @@ function load_mailbox(mailbox) {
                 document.querySelectorAll('button').forEach(button => {
                     button.disabled = true;
                 });
+                document.querySelectorAll('.linkdiv').forEach(button => {
+                    button.remove(); 
+                });
             }
-        });   
-    })
+        });    
+    });
 }
 
 // #############################################################################
 
-function load_email(event, idOfEmail, arcStatus, archivebutton, mailbox) {
+function load_email(idOfEmail, mailbox) {
+
+    clearHighlighting();
+
+    checkMessage();
+
+    removeOld('#mailGrid');
+    removeOld('#divForMail');
     
-    if (event.target === archivebutton) {       
-        archive_email(idOfEmail, arcStatus, mailbox);
-    }
-    else {
-
-        document.querySelectorAll('.highlight').forEach(button => {
-            button.removeAttribute('style');
-        });
-
-        document.querySelector('#oneEmailView').style.display = 'block';
-
-        checkMessage();
-
-        removeOld('#mailGrid');
-        removeOld('#divForMail');
+    fetch('/emails/' + idOfEmail)
+    .then(response => response.json())
+    .then(email => {
+        const divForMail = document.createElement('div');
+        const sender_field = document.createElement('p');
+        const recipients_field = document.createElement('p');
+        const subject_field = document.createElement('p');
+        const timestamp_field = document.createElement('p');
+        const body_field = document.createElement('p');
         
-        fetch('/emails/' + idOfEmail)
-        .then(response => response.json())
-        .then(email => {
-            const divForMail = document.createElement('div');
-            const sender_field = document.createElement('p');
-            const recipients_field = document.createElement('p');
-            const subject_field = document.createElement('p');
-            const timestamp_field = document.createElement('p');
-            const body_field = document.createElement('p');
-            
-            // for recipients' separating
-            recipients = separatingRecipients(email.recipients)
-            
-            sender_field.innerHTML = `<strong>From:</strong> ${email.sender}`;
-            recipients_field.innerHTML = `<strong>To:</strong> ${recipients}`;
-            subject_field.innerHTML = `<strong>Subject:</strong> ${email.subject}`;
-            timestamp_field.innerHTML = `<strong>Date:</strong> ${email.timestamp}`;
+        // for recipients' separating
+        recipients = separatingRecipients(email.recipients)
+        
+        sender_field.innerHTML = `<strong>From:</strong> ${email.sender}`;
+        recipients_field.innerHTML = `<strong>To:</strong> ${recipients}`;
+        subject_field.innerHTML = `<strong>Subject:</strong> ${email.subject}`;
+        timestamp_field.innerHTML = `<strong>Date:</strong> ${email.timestamp}`;
 
-            const array = email.body.split("\n");
-            let body = '';
-            for (let unit of array) {
-                body += unit + '<br>'
-            }
-            body_field.innerHTML = body;
+        const array = email.body.split("\n");
+        let body = '';
+        for (let unit of array) {
+            body += unit + '<br>'
+        }
+        body_field.innerHTML = body;
 
-            divForMail.setAttribute('id', 'divForMail');
+        divForMail.setAttribute('id', 'divForMail');
 
-            divForMail.append(sender_field, recipients_field, subject_field, timestamp_field, body_field);
+        divForMail.append(sender_field, recipients_field, subject_field, timestamp_field, body_field);
 
-            if (mailbox != 'sent') {
-                const reply_button = document.createElement('button');
-                reply_button.innerText = 'Reply';
-                reply_button.className = 'btn btn-outline-primary replydisable';
+        if (mailbox != 'sent') {
+            const reply_button = document.createElement('button');
+            reply_button.innerText = 'Reply';
+            reply_button.className = 'btn btn-outline-primary replydisable';
 
-                divForMail.append(reply_button);
-                reply_button.addEventListener('click', () => reply_email(email));
-            }
+            divForMail.append(reply_button);
+            reply_button.addEventListener('click', () => reply_email(email));
+        }
 
-            document.querySelector('#oneEmailView').append(divForMail);
+        document.querySelector('#emails-view').append(divForMail);
 
-            readStatus(email.read, idOfEmail);
-        })
-    }
+        readStatus(email.read, idOfEmail);
+
+        document.querySelectorAll('button').forEach(button => {
+            button.disabled = false; 
+        });
+    })
 }
 
 // #############################################################################
@@ -271,8 +322,7 @@ function archive_email(idOfEmail, arcStatus, mailbox) {
             load_mailbox('inbox')
         else
             load_mailbox('archived')
-    });
-    
+    });   
 }
 
 // #############################################################################
@@ -285,7 +335,6 @@ function reply_email (email) {
 
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
-    document.querySelector('#oneEmailView').style.display = 'none';
 
     document.querySelector('#compose-recipients').value = email.sender;
 
@@ -373,10 +422,16 @@ function checkMessage() {
 // for tabs highlighting
 function highlighting(element) {
     const overbutton = document.querySelector(element);
-    overbutton.style.color = '#fff';
-    overbutton.style.backgroundColor = '#007bff';
-    overbutton.style.borderColor = '#007bff';
-    overbutton.style.boxShadow = '0 0 0 0.2rem rgb(0 123 255 / 50%)';
+    overbutton.classList.add('forhighlighting');
+}
+
+// #############################################################################
+
+// for clear tabs highlighting
+function clearHighlighting() {
+    document.querySelectorAll('.highlight').forEach(button => {
+        button.classList.remove('forhighlighting');
+    });
 }
 
 // #############################################################################
